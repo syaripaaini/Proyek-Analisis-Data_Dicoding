@@ -6,7 +6,7 @@ Repository ini berisi proyek data analytics yang saya kerjakan. Deployment in **
 
 ## Deskripsi
 
-Proyek ini bertujuan untuk menganalisis data pada E-Commerce Public Dataset. Tujuan akhirnya adalah untuk menghasilkan wawasan dan informasi yang berguna dari data yang dianalisis.
+Proyek ini bertujuan untuk menganalisis data pada E-Commerce Public Dataset. 
 
 ## Struktur Direktori
 
@@ -16,20 +16,24 @@ Proyek ini bertujuan untuk menganalisis data pada E-Commerce Public Dataset. Tuj
 
 ## Instalasi
 
-1. Clone repository ini ke komputer lokal Anda menggunakan perintah berikut:
+1. setup environment shell/terminal menggunakan perintah:
 
    ```shell
-   git clone https://github.com/Mazwan98/dicoding.git
+   mkdir proyek_analisis_data
+   cd proyek_analisis_data
+   pipenv install
+   pipenv shell
+   pip install -r requirements.txt
    ```
 
-2. Pastikan Anda memiliki lingkungan Python yang sesuai dan pustaka-pustaka yang diperlukan. Anda dapat menginstal pustaka-pustaka tersebut dengan menjalankan perintah berikut:
+2. memiliki lingkungan Python yang sesuai dan pustaka-pustaka yang diperlukan. maka dapat menginstal pustaka-pustaka tersebut dengan menjalankan perintah ini:
 
    ```shell
    pip install streamlit
    pip install -r dashboard/requirements.txt
    ```
 
-## Penggunaan
+## digunakan
 
 1. Masuk ke direktori proyek (Local):
 
