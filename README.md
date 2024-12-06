@@ -1,45 +1,90 @@
-## _Proyek-Analisis-Data_Dicoding_
-This project was created as a requirement for graduation and obtaining a certificate from the Dicoding course on Learning Data Analysis with Python.
+Berikut adalah tampilan README yang lebih keren dan terstruktur dengan menggunakan Markdown untuk GitHub, dengan mengikuti format yang Anda inginkan. Saya telah menyesuaikan bagian-bagian tertentu agar lebih jelas dan informatif:
 
+---
 
-Repository ini berisi proyek data analytics yang saya kerjakan. Deployment in **Streamlit** <img src="https://github.com/syaripaaini/Proyek-Analisis-Data_Dicoding/blob/main/dashboard/logo.jpg"></img>
+# Syaripatul Aini E-Commerce Dashboard ✨
 
-## Deskripsi
+Welcome to the **Syaripatul Aini Dashboard** project! This dashboard provides an interactive interface to analyze e-commerce data using **Streamlit**, **Pandas**, **Seaborn**, and **Matplotlib**. It includes features like daily order metrics, customer demographics, and geolocation analysis.
 
-Proyek ini bertujuan untuk menganalisis data pada E-Commerce Public Dataset. 
+## Setup Environment - Anaconda
 
-## Struktur Direktori
+For those using **Anaconda** to set up the project environment, follow the steps below:
 
-- **/data**: Direktori ini berisi data yang digunakan dalam proyek, dalam format .csv .
-- **/dashboard**: Direktori ini berisi main.py yang digunakan untuk membuat dashboard hasil analisis data.
-- **Proyek-Analisis-Data_Dicoding**: File ini yang digunakan untuk melakukan analisis data.
+1. Create and activate a new Conda environment:
+    ```bash
+    conda create --name syaripatul-dashboard python=3.9
+    conda activate syaripatul-dashboard
+    ```
 
-## Instalasi
+2. Install the required dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-1. setup environment shell/terminal menggunakan perintah:
+## Setup Environment - Shell/Terminal (using **Pipenv**)
 
-   ```shell
-   mkdir proyek_analisis_data
-   cd proyek_analisis_data
-   pipenv install
-   pipenv shell
-   pip install -r requirements.txt
-   ```
+If you prefer **Pipenv** for managing your virtual environment, follow these steps:
 
-2. memiliki lingkungan Python yang sesuai dan pustaka-pustaka yang diperlukan. maka dapat menginstal pustaka-pustaka tersebut dengan menjalankan perintah ini:
+1. Create and navigate to the project directory:
+    ```bash
+    mkdir proyek_analisis_data
+    cd proyek_analisis_data
+    ```
 
-   ```shell
-   pip install streamlit
-   pip install -r dashboard/requirements.txt
-   ```
+2. Install **Pipenv** and activate the environment:
+    ```bash
+    pipenv install
+    pipenv shell
+    ```
 
-## digunakan
+3. Install the dependencies from `requirements.txt`:
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-1. Masuk ke direktori proyek (Local):
+## requirements.txt
 
-   ```shell
-   cd dicoding/dashboard/
-   streamlit run main.py
-   ```
+The `requirements.txt` file includes all the necessary libraries for the project. Here are the contents of the file:
 
+```
+pandas
+matplotlib
+seaborn
+streamlit
+babel
+```
 
+If you need additional libraries, you can add them to this file.
+
+## Run Streamlit App
+
+To run the **Streamlit** app, execute the following command in your terminal:
+
+```bash
+streamlit run dashboard.py
+```
+
+Make sure to replace `dashboard.py` with the actual filename of your Streamlit app if it differs.
+
+## Project Structure
+
+Your project folder should have the following structure:
+
+```
+proyek_analisis_data/
+│
+├── dashboard.py            # Streamlit application file
+├── requirements.txt        # List of project dependencies
+├── main_data.csv           # Main dataset
+├── geolocation_dataset.csv # Geolocation dataset
+├── gcl.png                 # Image for the sidebar logo
+```
+
+## Notes
+
+- **Path Configuration**: Ensure that the paths to the datasets (`main_data.csv`, `geolocation_dataset.csv`, and `gcl.png`) are correctly set in your project.
+- **Data**: The datasets used for analysis include **order data** and **geolocation data**, make sure the CSV files are available in the correct paths.
+
+---
+
+This README will provide users with clear, organized instructions for setting up and running your **Streamlit** dashboard. Let me know if you need any more tweaks!
