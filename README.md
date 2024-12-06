@@ -61,7 +61,7 @@ If you need additional libraries, you can add them to this file.
 To run the **Streamlit** app, execute the following command in your terminal:
 
 ```bash
-streamlit run dashboard.py
+streamlit run Dashboard.py
 ```
 
 Make sure to replace `dashboard.py` with the actual filename of your Streamlit app if it differs.
