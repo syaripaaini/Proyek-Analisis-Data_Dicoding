@@ -80,11 +80,4 @@ proyek_analisis_data/
 ├── gcl.png                 # Image for the sidebar logo
 ```
 
-## Notes
 
-- **Path Configuration**: Ensure that the paths to the datasets (`main_data.csv`, `geolocation_dataset.csv`, and `gcl.png`) are correctly set in your project.
-- **Data**: The datasets used for analysis include **order data** and **geolocation data**, make sure the CSV files are available in the correct paths.
-
----
-
-This README will provide users with clear, organized instructions for setting up and running your **Streamlit** dashboard. Let me know if you need any more tweaks!
