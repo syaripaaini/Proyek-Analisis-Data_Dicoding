@@ -3,10 +3,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import streamlit as st
 from babel.numbers import format_currency
-import folium
-from streamlit_folium import folium_static
 import zipfile
-from io import BytesIO
 
 sns.set(style="darkgrid")
 
@@ -20,18 +17,13 @@ def load_data(zip_file):
         return data
     except FileNotFoundError:
         st.error("File main_data.csv tidak ditemukan dalam ZIP. Pastikan file tersedia.")
-        return pd.DataFrame()  # Mengembalikan DataFrame kosong jika file tidak ditemukan
-
-# Fungsi untuk memuat gambar dengan error handling
-def load_image(image_path):
-    try:
-        return open(image_path, "rb").read()
-    except FileNotFoundError:
-        st.warning("File gambar tidak ditemukan. Pastikan file tersedia.")
-        return None
+        return pd.DataFrame()
 
 # Unggah file ZIP
 uploaded_file = st.file_uploader("Pilih file ZIP", type="zip")
+
+# Unggah gambar logo
+uploaded_logo = st.file_uploader("Pilih file gambar logo perusahaan", type=["png", "jpg", "jpeg"])
 
 if uploaded_file is not None:
     # Memuat dataset dari file ZIP
@@ -58,10 +50,12 @@ if uploaded_file is not None:
     # Sidebar Configuration
     with st.sidebar:
         st.title("Dashboard E-Commerce")
-        # Memuat gambar dengan validasi
-        logo = load_image("gcl.png")
-        if logo:
-            st.image(logo, caption="Logo Perusahaan", use_column_width=True)
+        
+        # Menampilkan gambar logo jika ada
+        if uploaded_logo is not None:
+            st.image(uploaded_logo, caption="Logo Perusahaan", use_column_width=True)
+        else:
+            st.warning("Logo perusahaan belum diunggah.")
 
         st.write(f"Data tersedia dari {min_date.date()} hingga {max_date.date()}")
 
