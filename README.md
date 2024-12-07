@@ -43,11 +43,15 @@ If you prefer **Pipenv** for managing your virtual environment, follow these ste
 The `requirements.txt` file includes all the necessary libraries for the project. Here are the contents of the file:
 
 ```
-pandas
+babel
+numpy
 matplotlib
+pandas
 seaborn
 streamlit
-babel
+folium
+streamlit-folium
+
 ```
 
 If you need additional libraries, you can add them to this file.
