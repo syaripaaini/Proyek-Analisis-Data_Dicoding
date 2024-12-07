@@ -18,9 +18,17 @@ def load_data(zip_file):
             with zip_ref.open('main_data.csv') as csv_file:
                 data = pd.read_csv(csv_file)
         return data
-    except KeyError:
-        st.error("File 'main_data.csv' tidak ditemukan dalam ZIP. Pastikan file tersedia.")
-        return pd.DataFrame()
+    except FileNotFoundError:
+        st.error("File main_data.csv tidak ditemukan dalam ZIP. Pastikan file tersedia.")
+        return pd.DataFrame()  # Mengembalikan DataFrame kosong jika file tidak ditemukan
+
+# Fungsi untuk memuat gambar dengan error handling
+def load_image(image_path):
+    try:
+        return open(image_path, "rb").read()
+    except FileNotFoundError:
+        st.warning("File gambar tidak ditemukan. Pastikan file tersedia.")
+        return None
 
 # Unggah file ZIP
 uploaded_file = st.file_uploader("Pilih file ZIP", type="zip")
@@ -37,11 +45,11 @@ if uploaded_file is not None:
     if "order_approved_at" in main_data.columns:
         # Konversi kolom 'order_approved_at' menjadi datetime
         main_data["order_approved_at"] = pd.to_datetime(main_data["order_approved_at"], errors="coerce")
-        # Hapus baris dengan nilai NaT di 'order_approved_at'
+        # Pastikan tidak ada nilai NaT di 'order_approved_at'
         main_data = main_data.dropna(subset=["order_approved_at"])
     else:
         st.error("Kolom 'order_approved_at' tidak ditemukan dalam dataset.")
-        st.stop()
+        st.stop()  # Menghentikan eksekusi jika kolom tidak ada
 
     # Menentukan rentang tanggal berdasarkan data
     min_date = main_data["order_approved_at"].min()
@@ -50,7 +58,11 @@ if uploaded_file is not None:
     # Sidebar Configuration
     with st.sidebar:
         st.title("Dashboard E-Commerce")
-        st.image("gcl.png", caption="Logo Perusahaan", use_column_width=True, output_format="auto", channels="RGB")
+        # Memuat gambar dengan validasi
+        logo = load_image("gcl.png")
+        if logo:
+            st.image(logo, caption="Logo Perusahaan", use_column_width=True)
+
         st.write(f"Data tersedia dari {min_date.date()} hingga {max_date.date()}")
 
         # Input rentang tanggal
@@ -63,7 +75,7 @@ if uploaded_file is not None:
             )
         except Exception as e:
             st.error(f"Error pada input tanggal: {e}")
-            st.stop()
+            st.stop()  # Menghentikan eksekusi jika ada error
 
     # Filter data berdasarkan rentang tanggal
     filtered_data = main_data[
@@ -111,18 +123,6 @@ if uploaded_file is not None:
         ax.set_xlabel("Tanggal", fontsize=12)
         ax.set_ylabel("Jumlah Pesanan", fontsize=12)
         ax.legend()
-        st.pyplot(fig)
-
-        # Grafik: Pendapatan Harian
-        st.subheader("Tren Pendapatan Harian")
-        fig, ax = plt.subplots(figsize=(12, 6))
-        sns.barplot(
-            x="order_approved_at", y="revenue", data=daily_metrics,
-            palette="Blues_d", ax=ax
-        )
-        ax.set_title("Pendapatan Harian", fontsize=16)
-        ax.set_xlabel("Tanggal", fontsize=12)
-        ax.set_ylabel("Pendapatan (IDR)", fontsize=12)
         st.pyplot(fig)
     else:
         st.warning("Tidak ada data untuk ditampilkan berdasarkan filter.")
