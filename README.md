@@ -1,7 +1,3 @@
-Berikut adalah tampilan README yang lebih keren dan terstruktur dengan menggunakan Markdown untuk GitHub, dengan mengikuti format yang Anda inginkan. Saya telah menyesuaikan bagian-bagian tertentu agar lebih jelas dan informatif:
-
----
-
 # Syaripatul Aini E-Commerce Dashboard ✨
 
 Welcome to the **Syaripatul Aini Dashboard** project! This dashboard provides an interactive interface to analyze e-commerce data using **Streamlit**, **Pandas**, **Seaborn**, and **Matplotlib**. It includes features like daily order metrics, customer demographics, and geolocation analysis.
