@@ -50,7 +50,10 @@ if uploaded_file is not None:
     # Sidebar Configuration
     with st.sidebar:
         st.title("Dashboard E-Commerce")
-        st.image("gcl.png", caption="Logo Perusahaan")  # Pastikan file gambar tersedia
+        try:
+            st.image("gcl.png", caption="Logo Perusahaan")  # Pastikan file gambar tersedia
+        except FileNotFoundError:
+            st.warning("File gambar tidak ditemukan. Pastikan file tersedia.")
         st.write(f"Data tersedia dari {min_date.date()} hingga {max_date.date()}")
 
         # Input rentang tanggal
@@ -201,5 +204,5 @@ if uploaded_file is not None:
     else:
         st.warning("Tidak ada data untuk ditampilkan berdasarkan filter.")
 
-# Footer
+    # Footer
     st.caption("Copyright © Syaripatul Aini 2024")
