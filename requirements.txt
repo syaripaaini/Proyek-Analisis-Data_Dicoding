@@ -1,0 +1,8 @@
+pip install babel==2.12.1
+pip install numpy==1.25.2
+pip install matplotlib==3.8.0
+pip install pandas==2.1.4
+pip install seaborn==0.13.0
+pip install streamlit==1.30.0
+pip install folium
+pip install streamlit-folium
