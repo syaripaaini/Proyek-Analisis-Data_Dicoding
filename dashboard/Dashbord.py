@@ -4,29 +4,36 @@ import seaborn as sns
 import streamlit as st
 from babel.numbers import format_currency
 
-sns.set(style="whitegrid")  # Gaya grid yang lebih ringan
+sns.set(style="darkgrid")
 
-# Fungsi untuk memuat dataset secara langsung
+# Fungsi untuk memuat dataset
 @st.cache_data
-def load_default_data():
-    # Ganti path ini dengan file CSV Anda yang sudah di-embed
+def load_data():
     try:
-        data = pd.read_csv("main_data.csv")
+        # Memuat dataset dari file CSV
+        data = pd.read_csv("main_data.csv")  # Ubah dengan URL jika diperlukan
         return data
     except FileNotFoundError:
-        st.error("File main_data.csv tidak ditemukan. Pastikan file tersedia di direktori.")
+        st.error("File dataset tidak ditemukan. Pastikan file tersedia.")
         return pd.DataFrame()
 
-# Fungsi untuk memuat logo default
-def load_default_logo():
-    return "logo_perusahaan.png"  # Ganti dengan path gambar logo perusahaan Anda
+# Fungsi untuk memuat gambar logo
+@st.cache_data
+def load_logo():
+    try:
+        with open("logo_perusahaan.png", "rb") as logo_file:  # Ubah dengan URL jika diperlukan
+            return logo_file.read()
+    except FileNotFoundError:
+        return None
 
-# Memuat dataset
-main_data = load_default_data()
+# Memuat dataset dan logo
+main_data = load_data()
+logo_image = load_logo()
 
 # Validasi apakah dataset berhasil dimuat
 if main_data.empty:
-    st.stop()  # Menghentikan eksekusi Streamlit jika data kosong
+    st.error("Dataset gagal dimuat. Periksa file dataset.")
+    st.stop()
 
 # Validasi kolom 'order_approved_at'
 if "order_approved_at" in main_data.columns:
@@ -36,7 +43,7 @@ if "order_approved_at" in main_data.columns:
     main_data = main_data.dropna(subset=["order_approved_at"])
 else:
     st.error("Kolom 'order_approved_at' tidak ditemukan dalam dataset.")
-    st.stop()  # Menghentikan eksekusi jika kolom tidak ada
+    st.stop()
 
 # Menentukan rentang tanggal berdasarkan data
 min_date = main_data["order_approved_at"].min()
@@ -46,8 +53,11 @@ max_date = main_data["order_approved_at"].max()
 with st.sidebar:
     st.title("Dashboard E-Commerce")
     
-    # Menampilkan gambar logo default
-    st.image(load_default_logo(), caption="Logo Perusahaan", use_column_width=True)
+    # Menampilkan gambar logo jika ada
+    if logo_image is not None:
+        st.image(logo_image, caption="Logo Perusahaan", use_column_width=True)
+    else:
+        st.warning("Logo perusahaan tidak tersedia.")
 
     st.write(f"Data tersedia dari {min_date.date()} hingga {max_date.date()}")
 
@@ -103,27 +113,12 @@ if not daily_metrics.empty:
     fig, ax = plt.subplots(figsize=(12, 6))
     sns.lineplot(
         x="order_approved_at", y="order_count", data=daily_metrics,
-        ax=ax, marker="o", color="#FF6347", label="Orders"  # Warna garis dan titik
+        ax=ax, marker="o", color="#42A5F5", label="Orders"
     )
-    ax.set_title("Jumlah Pesanan Harian", fontsize=18, fontweight="bold")
-    ax.set_xlabel("Tanggal", fontsize=14)
-    ax.set_ylabel("Jumlah Pesanan", fontsize=14)
-    ax.legend(fontsize=12, loc="upper left")
-    ax.grid(color="gray", linestyle="--", linewidth=0.5, alpha=0.7)
-    st.pyplot(fig)
-
-    # Grafik: Tren Pendapatan Harian
-    st.subheader("Tren Pendapatan Harian")
-    fig, ax = plt.subplots(figsize=(12, 6))
-    sns.lineplot(
-        x="order_approved_at", y="revenue", data=daily_metrics,
-        ax=ax, marker="o", color="#4682B4", label="Revenue"  # Warna garis dan titik
-    )
-    ax.set_title("Pendapatan Harian", fontsize=18, fontweight="bold")
-    ax.set_xlabel("Tanggal", fontsize=14)
-    ax.set_ylabel("Pendapatan (IDR)", fontsize=14)
-    ax.legend(fontsize=12, loc="upper left")
-    ax.grid(color="gray", linestyle="--", linewidth=0.5, alpha=0.7)
+    ax.set_title("Jumlah Pesanan Harian", fontsize=16)
+    ax.set_xlabel("Tanggal", fontsize=12)
+    ax.set_ylabel("Jumlah Pesanan", fontsize=12)
+    ax.legend()
     st.pyplot(fig)
 else:
     st.warning("Tidak ada data untuk ditampilkan berdasarkan filter.")
