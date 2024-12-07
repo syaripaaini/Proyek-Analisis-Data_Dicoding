@@ -5,7 +5,7 @@ import streamlit as st
 from babel.numbers import format_currency
 import zipfile
 
-sns.set(style="darkgrid")
+sns.set(style="whitegrid")  # Gaya grid yang lebih ringan
 
 # Fungsi untuk memuat dataset dengan caching
 @st.cache_data
@@ -111,12 +111,27 @@ if uploaded_file is not None:
         fig, ax = plt.subplots(figsize=(12, 6))
         sns.lineplot(
             x="order_approved_at", y="order_count", data=daily_metrics,
-            ax=ax, marker="o", color="#42A5F5", label="Orders"
+            ax=ax, marker="o", color="#FF6347", label="Orders"  # Warna garis dan titik
         )
-        ax.set_title("Jumlah Pesanan Harian", fontsize=16)
-        ax.set_xlabel("Tanggal", fontsize=12)
-        ax.set_ylabel("Jumlah Pesanan", fontsize=12)
-        ax.legend()
+        ax.set_title("Jumlah Pesanan Harian", fontsize=18, fontweight="bold")
+        ax.set_xlabel("Tanggal", fontsize=14)
+        ax.set_ylabel("Jumlah Pesanan", fontsize=14)
+        ax.legend(fontsize=12, loc="upper left")
+        ax.grid(color="gray", linestyle="--", linewidth=0.5, alpha=0.7)
+        st.pyplot(fig)
+
+        # Grafik: Tren Pendapatan Harian
+        st.subheader("Tren Pendapatan Harian")
+        fig, ax = plt.subplots(figsize=(12, 6))
+        sns.lineplot(
+            x="order_approved_at", y="revenue", data=daily_metrics,
+            ax=ax, marker="o", color="#4682B4", label="Revenue"  # Warna garis dan titik
+        )
+        ax.set_title("Pendapatan Harian", fontsize=18, fontweight="bold")
+        ax.set_xlabel("Tanggal", fontsize=14)
+        ax.set_ylabel("Pendapatan (IDR)", fontsize=14)
+        ax.legend(fontsize=12, loc="upper left")
+        ax.grid(color="gray", linestyle="--", linewidth=0.5, alpha=0.7)
         st.pyplot(fig)
     else:
         st.warning("Tidak ada data untuk ditampilkan berdasarkan filter.")
