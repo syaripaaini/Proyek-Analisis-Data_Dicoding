@@ -44,7 +44,7 @@ If you prefer **Pipenv** for managing your virtual environment, follow these ste
 
     Instructions:
     Upload the zip file containing your dataset.
-    Upload the logo PNG file on the dashboard.
+    Upload the gcl PNG file on the dashboard.
     Once the files are uploaded, the application will automatically process them and allow you to view the results.
     ```
 
