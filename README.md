@@ -38,6 +38,17 @@ If you prefer **Pipenv** for managing your virtual environment, follow these ste
     pip install -r requirements.txt
     ```
 
+
+4.  To access the application, you need to upload the dataset as a zip file and the logo PNG file on the dashboard first. After that, you 
+       ```can access the application directly.
+
+    Instructions:
+    Upload the zip file containing your dataset.
+    Upload the logo PNG file on the dashboard.
+    Once the files are uploaded, the application will automatically process them and allow you to view the results.
+    ```
+
+
 ## requirements.txt
 
 The `requirements.txt` file includes all the necessary libraries for the project. Here are the contents of the file:
