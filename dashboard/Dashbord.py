@@ -3,37 +3,58 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import streamlit as st
 from babel.numbers import format_currency
+import requests
+import zipfile
+import os
 
-sns.set(style="darkgrid")
+sns.set(style="whitegrid")  # Gaya grid yang lebih ringan
+
+# URL dari file zip yang terdapat di GitHub
+ZIP_URL = "https://github.com/username/repo-name/raw/main/dataset.zip"  # Ganti dengan URL zip file Anda
+DATA_FILENAME = "main_data.csv"  # Nama file dataset di dalam zip
+LOGO_URL = "https://github.com/username/repo-name/raw/main/logo_perusahaan.png"  # URL logo perusahaan di GitHub
+
+# Fungsi untuk mengunduh dan mengekstrak file dari GitHub
+def download_and_extract_zip(zip_url, extract_to="./data"):
+    if not os.path.exists(extract_to):
+        os.makedirs(extract_to)
+    
+    zip_path = os.path.join(extract_to, "data.zip")
+    
+    # Unduh file zip
+    response = requests.get(zip_url)
+    with open(zip_path, "wb") as f:
+        f.write(response.content)
+    
+    # Ekstrak file zip
+    with zipfile.ZipFile(zip_path, "r") as zip_ref:
+        zip_ref.extractall(extract_to)
+    
+    # Hapus file zip setelah ekstraksi
+    os.remove(zip_path)
+
+# Memastikan data sudah diunduh dan diekstrak
+DATA_DIR = "./data"
+if not os.path.exists(os.path.join(DATA_DIR, DATA_FILENAME)):
+    download_and_extract_zip(ZIP_URL, extract_to=DATA_DIR)
 
 # Fungsi untuk memuat dataset
 @st.cache_data
 def load_data():
     try:
-        # Memuat dataset dari file CSV
-        data = pd.read_csv("main_data.csv")  # Ubah dengan URL jika diperlukan
+        data_path = os.path.join(DATA_DIR, DATA_FILENAME)
+        data = pd.read_csv(data_path)
         return data
     except FileNotFoundError:
-        st.error("File dataset tidak ditemukan. Pastikan file tersedia.")
+        st.error("File dataset tidak ditemukan. Pastikan file tersedia di repositori.")
         return pd.DataFrame()
 
-# Fungsi untuk memuat gambar logo
-@st.cache_data
-def load_logo():
-    try:
-        with open("logo_perusahaan.png", "rb") as logo_file:  # Ubah dengan URL jika diperlukan
-            return logo_file.read()
-    except FileNotFoundError:
-        return None
-
-# Memuat dataset dan logo
+# Memuat dataset
 main_data = load_data()
-logo_image = load_logo()
 
 # Validasi apakah dataset berhasil dimuat
 if main_data.empty:
-    st.error("Dataset gagal dimuat. Periksa file dataset.")
-    st.stop()
+    st.stop()  # Menghentikan eksekusi Streamlit jika data kosong
 
 # Validasi kolom 'order_approved_at'
 if "order_approved_at" in main_data.columns:
@@ -43,7 +64,7 @@ if "order_approved_at" in main_data.columns:
     main_data = main_data.dropna(subset=["order_approved_at"])
 else:
     st.error("Kolom 'order_approved_at' tidak ditemukan dalam dataset.")
-    st.stop()
+    st.stop()  # Menghentikan eksekusi jika kolom tidak ada
 
 # Menentukan rentang tanggal berdasarkan data
 min_date = main_data["order_approved_at"].min()
@@ -53,11 +74,8 @@ max_date = main_data["order_approved_at"].max()
 with st.sidebar:
     st.title("Dashboard E-Commerce")
     
-    # Menampilkan gambar logo jika ada
-    if logo_image is not None:
-        st.image(logo_image, caption="Logo Perusahaan", use_column_width=True)
-    else:
-        st.warning("Logo perusahaan tidak tersedia.")
+    # Menampilkan gambar logo langsung dari URL
+    st.image(LOGO_URL, caption="Logo Perusahaan", use_column_width=True)
 
     st.write(f"Data tersedia dari {min_date.date()} hingga {max_date.date()}")
 
@@ -113,12 +131,27 @@ if not daily_metrics.empty:
     fig, ax = plt.subplots(figsize=(12, 6))
     sns.lineplot(
         x="order_approved_at", y="order_count", data=daily_metrics,
-        ax=ax, marker="o", color="#42A5F5", label="Orders"
+        ax=ax, marker="o", color="#FF6347", label="Orders"  # Warna garis dan titik
     )
-    ax.set_title("Jumlah Pesanan Harian", fontsize=16)
-    ax.set_xlabel("Tanggal", fontsize=12)
-    ax.set_ylabel("Jumlah Pesanan", fontsize=12)
-    ax.legend()
+    ax.set_title("Jumlah Pesanan Harian", fontsize=18, fontweight="bold")
+    ax.set_xlabel("Tanggal", fontsize=14)
+    ax.set_ylabel("Jumlah Pesanan", fontsize=14)
+    ax.legend(fontsize=12, loc="upper left")
+    ax.grid(color="gray", linestyle="--", linewidth=0.5, alpha=0.7)
+    st.pyplot(fig)
+
+    # Grafik: Tren Pendapatan Harian
+    st.subheader("Tren Pendapatan Harian")
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.lineplot(
+        x="order_approved_at", y="revenue", data=daily_metrics,
+        ax=ax, marker="o", color="#4682B4", label="Revenue"  # Warna garis dan titik
+    )
+    ax.set_title("Pendapatan Harian", fontsize=18, fontweight="bold")
+    ax.set_xlabel("Tanggal", fontsize=14)
+    ax.set_ylabel("Pendapatan (IDR)", fontsize=14)
+    ax.legend(fontsize=12, loc="upper left")
+    ax.grid(color="gray", linestyle="--", linewidth=0.5, alpha=0.7)
     st.pyplot(fig)
 else:
     st.warning("Tidak ada data untuk ditampilkan berdasarkan filter.")
