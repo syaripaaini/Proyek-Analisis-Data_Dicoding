@@ -38,41 +38,51 @@ def load_logo(url):
 # Header aplikasi
 st.title("E-Commerce Dashboard")
 
-# Input URL untuk logo perusahaan
-logo_url = st.text_input("Masukkan URL logo perusahaan (contoh: https://raw.githubusercontent.com/user/repo/gcl.png):")
+# Pilihan logo perusahaan
+st.sidebar.subheader("Pilih Logo Perusahaan")
+logo_options = {
+    "Logo 1": "https://raw.githubusercontent.com/user/repo/logo1.png",
+    "Logo 2": "https://raw.githubusercontent.com/user/repo/logo2.png",
+    "Logo 3": "https://raw.githubusercontent.com/user/repo/logo3.png"
+}
+logo_choice = st.sidebar.selectbox("Pilih Logo", options=["Default"] + list(logo_options.keys()))
+
+# Memuat logo yang dipilih
+if logo_choice != "Default":
+    logo_url = logo_options[logo_choice]
+    logo = load_logo(logo_url)
+else:
+    logo = None
+
+# Tampilkan logo di sidebar
+if logo:
+    st.sidebar.image(logo, caption="Logo Perusahaan", use_column_width=True)
+else:
+    st.sidebar.info("Logo default digunakan.")
 
 # Muat dataset bawaan
 main_data = load_default_data()
 
 # Sidebar untuk filtering data
-with st.sidebar:
-    st.subheader("Filter Data")
+st.sidebar.subheader("Filter Data")
 
-    # Tampilkan logo jika URL valid
-    if logo_url:
-        logo = load_logo(logo_url)
-        if logo:
-            st.image(logo, caption="Logo Perusahaan", use_column_width=True)
-    else:
-        st.info("Masukkan URL logo perusahaan untuk tampilan lebih menarik.")
+# Filter tanggal
+start_date, end_date = st.sidebar.date_input(
+    "Pilih Rentang Tanggal",
+    value=[main_data["order_approved_at"].min().date(), main_data["order_approved_at"].max().date()],
+    min_value=main_data["order_approved_at"].min().date(),
+    max_value=main_data["order_approved_at"].max().date()
+)
 
-    # Filter tanggal
-    start_date, end_date = st.date_input(
-        "Pilih Rentang Tanggal",
-        value=[main_data["order_approved_at"].min().date(), main_data["order_approved_at"].max().date()],
-        min_value=main_data["order_approved_at"].min().date(),
-        max_value=main_data["order_approved_at"].max().date()
-    )
+# Konversi tanggal filter ke datetime Pandas
+start_date = pd.to_datetime(start_date)
+end_date = pd.to_datetime(end_date)
 
-    # Konversi tanggal filter ke datetime Pandas
-    start_date = pd.to_datetime(start_date)
-    end_date = pd.to_datetime(end_date)
+# Filter cuaca
+weather_filter = st.sidebar.selectbox("Pilih Cuaca", options=main_data["weathersit"].unique())
 
-    # Filter cuaca
-    weather_filter = st.selectbox("Pilih Cuaca", options=main_data["weathersit"].unique())
-
-    # Filter musim
-    season_filter = st.multiselect("Pilih Musim", options=main_data["season"].unique(), default=main_data["season"].unique())
+# Filter musim
+season_filter = st.sidebar.multiselect("Pilih Musim", options=main_data["season"].unique(), default=main_data["season"].unique())
 
 # Filter data berdasarkan input pengguna
 filtered_data = main_data[
@@ -132,4 +142,4 @@ st.markdown("""
 """)
 
 # Footer
-st.caption("Copyright © 2024 - Dashboard ini dibangun menggunakan Streamlit.")
+st.caption("Copyright © 2024 - Syaripatul Aini.")
