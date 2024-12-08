@@ -5,9 +5,20 @@ import streamlit as st
 from babel.numbers import format_currency
 import zipfile
 
-sns.set(style="whitegrid")  # Gaya grid yang lebih ringan
+sns.set(style="whitegrid")  # Gaya visualisasi
 
-# Fungsi untuk memuat dataset dengan caching
+# Fungsi untuk memuat dataset bawaan
+@st.cache_data
+def load_default_data():
+    return pd.DataFrame({
+        "order_approved_at": pd.date_range("2023-01-01", periods=100, freq="D"),
+        "order_id": range(1, 101),
+        "payment_value": [i * 1000 for i in range(1, 101)],
+        "weathersit": ["Clear" if i % 2 == 0 else "Rain" for i in range(1, 101)],
+        "season": ["Winter" if i % 4 == 0 else "Summer" for i in range(1, 101)]
+    })
+
+# Fungsi untuk memuat dataset dari file ZIP
 @st.cache_data
 def load_data(zip_file):
     try:
@@ -19,122 +30,104 @@ def load_data(zip_file):
         st.error("File main_data.csv tidak ditemukan dalam ZIP. Pastikan file tersedia.")
         return pd.DataFrame()
 
-# Unggah file ZIP
-uploaded_file = st.file_uploader("Pilih file ZIP", type="zip")
+# Header aplikasi
+st.title("E-Commerce Dashboard")
 
-# Unggah gambar logo
+# Upload dataset dan logo
+uploaded_file = st.file_uploader("Pilih file ZIP untuk dataset", type="zip")
 uploaded_logo = st.file_uploader("Pilih file gambar logo perusahaan", type=["png", "jpg", "jpeg"])
 
-if uploaded_file is not None:
-    # Memuat dataset dari file ZIP
-    main_data = load_data(uploaded_file)
+# Load dataset (default atau user-uploaded)
+main_data = load_default_data() if uploaded_file is None else load_data(uploaded_file)
 
-    # Validasi apakah dataset berhasil dimuat
-    if main_data.empty:
-        st.stop()  # Menghentikan eksekusi Streamlit jika data kosong
+# Validasi dataset
+if main_data.empty:
+    st.warning("Dataset kosong. Menggunakan dataset bawaan.")
+else:
+    # Konversi tanggal dan validasi kolom
+    main_data["order_approved_at"] = pd.to_datetime(main_data.get("order_approved_at", pd.NaT), errors="coerce")
+    main_data.dropna(subset=["order_approved_at"], inplace=True)
 
-    # Validasi kolom 'order_approved_at'
-    if "order_approved_at" in main_data.columns:
-        # Konversi kolom 'order_approved_at' menjadi datetime
-        main_data["order_approved_at"] = pd.to_datetime(main_data["order_approved_at"], errors="coerce")
-        # Pastikan tidak ada nilai NaT di 'order_approved_at'
-        main_data = main_data.dropna(subset=["order_approved_at"])
-    else:
-        st.error("Kolom 'order_approved_at' tidak ditemukan dalam dataset.")
-        st.stop()  # Menghentikan eksekusi jika kolom tidak ada
-
-    # Menentukan rentang tanggal berdasarkan data
-    min_date = main_data["order_approved_at"].min()
-    max_date = main_data["order_approved_at"].max()
-
-    # Sidebar Configuration
+    # Sidebar
     with st.sidebar:
-        st.title("Dashboard E-Commerce")
+        st.subheader("Filter Data")
         
-        # Menampilkan gambar logo jika ada
-        if uploaded_logo is not None:
+        # Logo perusahaan
+        if uploaded_logo:
             st.image(uploaded_logo, caption="Logo Perusahaan", use_column_width=True)
         else:
-            st.warning("Logo perusahaan belum diunggah.")
+            st.info("Unggah logo perusahaan untuk tampilan lebih menarik.")
+        
+        # Filter tanggal
+        start_date, end_date = st.date_input(
+            "Pilih Rentang Tanggal",
+            value=[main_data["order_approved_at"].min(), main_data["order_approved_at"].max()],
+            min_value=main_data["order_approved_at"].min(),
+            max_value=main_data["order_approved_at"].max()
+        )
 
-        st.write(f"Data tersedia dari {min_date.date()} hingga {max_date.date()}")
-
-        # Input rentang tanggal
-        try:
-            start_date, end_date = st.date_input(
-                "Pilih Rentang Tanggal",
-                value=[min_date.date(), max_date.date()],
-                min_value=min_date.date(),
-                max_value=max_date.date(),
-            )
-        except Exception as e:
-            st.error(f"Error pada input tanggal: {e}")
-            st.stop()  # Menghentikan eksekusi jika ada error
-
-    # Filter data berdasarkan rentang tanggal
+        # Filter cuaca
+        weather_filter = st.selectbox("Pilih Cuaca", options=main_data["weathersit"].unique())
+        
+        # Filter musim
+        season_filter = st.multiselect("Pilih Musim", options=main_data["season"].unique(), default=main_data["season"].unique())
+    
+    # Filter data berdasarkan input
     filtered_data = main_data[
-        (main_data["order_approved_at"] >= pd.Timestamp(start_date)) &
-        (main_data["order_approved_at"] <= pd.Timestamp(end_date))
+        (main_data["order_approved_at"].between(start_date, end_date)) &
+        (main_data["weathersit"] == weather_filter) &
+        (main_data["season"].isin(season_filter))
     ]
 
-    # Fungsi untuk menghitung metrik harian
-    def calculate_daily_metrics(df):
-        if df.empty:
-            st.warning("Data kosong setelah difilter. Periksa rentang tanggal.")
-            return pd.DataFrame()
+    # Analisis metrik harian
+    daily_metrics = filtered_data.set_index("order_approved_at").resample("D").agg({
+        "order_id": "nunique",  # Jumlah pesanan unik
+        "payment_value": "sum"  # Total pendapatan
+    }).reset_index().rename(columns={"order_id": "order_count", "payment_value": "revenue"})
 
-        df = df.set_index("order_approved_at")  # Mengatur 'order_approved_at' sebagai index untuk resampling
-        daily_df = df.resample("D").agg({
-            "order_id": "nunique",  # Menghitung jumlah pesanan unik
-            "payment_value": "sum"  # Menjumlahkan total harga (menggunakan kolom 'payment_value')
-        }).reset_index()
-        daily_df.rename(columns={"order_id": "order_count", "payment_value": "revenue"}, inplace=True)
-        return daily_df
+    # Menampilkan metrik utama
+    st.header("Ringkasan Metrik")
+    total_orders = daily_metrics["order_count"].sum()
+    total_revenue = daily_metrics["revenue"].sum()
 
-    # Analisis data
-    daily_metrics = calculate_daily_metrics(filtered_data)
+    col1, col2 = st.columns(2)
+    col1.metric("Total Orders", f"{total_orders:,}")
+    col2.metric("Total Revenue", format_currency(total_revenue, "IDR", locale="id_ID"))
 
+    # Visualisasi data
     if not daily_metrics.empty:
-        # Header Dashboard
-        st.title("E-Commerce Dashboard")
-
-        # Menampilkan Metrik Utama
-        total_orders = daily_metrics["order_count"].sum()
-        total_revenue = daily_metrics["revenue"].sum()
-
-        col1, col2 = st.columns(2)
-        col1.metric("Total Orders", value=f"{total_orders:,}")
-        col2.metric("Total Revenue", value=format_currency(total_revenue, "IDR", locale="id_ID"))
-
         # Grafik: Tren Pesanan Harian
-        st.subheader("Tren Pesanan Harian")
-        fig, ax = plt.subplots(figsize=(12, 6))
-        sns.lineplot(
-            x="order_approved_at", y="order_count", data=daily_metrics,
-            ax=ax, marker="o", color="#FF6347", label="Orders"  # Warna garis dan titik
-        )
-        ax.set_title("Jumlah Pesanan Harian", fontsize=18, fontweight="bold")
-        ax.set_xlabel("Tanggal", fontsize=14)
-        ax.set_ylabel("Jumlah Pesanan", fontsize=14)
-        ax.legend(fontsize=12, loc="upper left")
-        ax.grid(color="gray", linestyle="--", linewidth=0.5, alpha=0.7)
+        st.subheader("Tren Jumlah Pesanan Harian")
+        fig, ax = plt.subplots(figsize=(10, 5))
+        sns.lineplot(data=daily_metrics, x="order_approved_at", y="order_count", ax=ax, marker="o")
+        ax.set_title("Tren Jumlah Pesanan Harian")
+        ax.set_xlabel("Tanggal")
+        ax.set_ylabel("Jumlah Pesanan")
         st.pyplot(fig)
 
         # Grafik: Tren Pendapatan Harian
         st.subheader("Tren Pendapatan Harian")
-        fig, ax = plt.subplots(figsize=(12, 6))
-        sns.lineplot(
-            x="order_approved_at", y="revenue", data=daily_metrics,
-            ax=ax, marker="o", color="#4682B4", label="Revenue"  # Warna garis dan titik
-        )
-        ax.set_title("Pendapatan Harian", fontsize=18, fontweight="bold")
-        ax.set_xlabel("Tanggal", fontsize=14)
-        ax.set_ylabel("Pendapatan (IDR)", fontsize=14)
-        ax.legend(fontsize=12, loc="upper left")
-        ax.grid(color="gray", linestyle="--", linewidth=0.5, alpha=0.7)
+        fig, ax = plt.subplots(figsize=(10, 5))
+        sns.lineplot(data=daily_metrics, x="order_approved_at", y="revenue", ax=ax, marker="o", color="green")
+        ax.set_title("Tren Pendapatan Harian")
+        ax.set_xlabel("Tanggal")
+        ax.set_ylabel("Pendapatan (IDR)")
         st.pyplot(fig)
     else:
         st.warning("Tidak ada data untuk ditampilkan berdasarkan filter.")
 
+    # Dokumentasi markdown
+    st.markdown("""
+    ## Dokumentasi
+    **Penjelasan Fitur:**
+    1. **Filter Tanggal**: Pilih rentang tanggal untuk memfilter data.
+    2. **Filter Cuaca**: Pilih cuaca tertentu (Clear, Rain, dll.).
+    3. **Filter Musim**: Pilih musim tertentu (Summer, Winter, dll.).
+    
+    **Visualisasi:**
+    - Grafik Tren Jumlah Pesanan Harian.
+    - Grafik Tren Pendapatan Harian.
+    """)
+
     # Footer
-    st.caption("Copyright © Syaripatul Aini 2024")
+    st.caption("Copyright © 2024 Syaripatul Aini - Dashboard ini dibangun menggunakan Streamlit.")
