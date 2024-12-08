@@ -61,10 +61,14 @@ else:
         # Filter tanggal
         start_date, end_date = st.date_input(
             "Pilih Rentang Tanggal",
-            value=[main_data["order_approved_at"].min(), main_data["order_approved_at"].max()],
-            min_value=main_data["order_approved_at"].min(),
-            max_value=main_data["order_approved_at"].max()
+            value=[main_data["order_approved_at"].min().date(), main_data["order_approved_at"].max().date()],
+            min_value=main_data["order_approved_at"].min().date(),
+            max_value=main_data["order_approved_at"].max().date()
         )
+
+        # Konversi tanggal filter ke datetime Pandas
+        start_date = pd.to_datetime(start_date)
+        end_date = pd.to_datetime(end_date)
 
         # Filter cuaca
         weather_filter = st.selectbox("Pilih Cuaca", options=main_data["weathersit"].unique())
