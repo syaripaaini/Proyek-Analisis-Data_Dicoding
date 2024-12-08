@@ -1,6 +1,6 @@
-# Syaripatul Aini E-Commerce Dashboard ✨
+# Syaripatul Aini Bike Sharing Dashboard ✨
 
-Welcome to the **Syaripatul Aini Dashboard** project! This dashboard provides an interactive interface to analyze e-commerce data using **Streamlit**, **Pandas**, **Seaborn**, and **Matplotlib**. It includes features like daily order metrics, customer demographics, and geolocation analysis.
+Welcome to the **Syaripatul Aini Dashboard** project! This dashboard provides an interactive interface to analyze bike-sharing data using **Streamlit**, **Pandas**, **Seaborn**, and **Matplotlib**. It includes features like daily order metrics, customer demographics, and geolocation analysis.
 
 ## Setup Environment - Anaconda
 
