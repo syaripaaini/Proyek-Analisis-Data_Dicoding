@@ -4,6 +4,9 @@ import seaborn as sns
 import streamlit as st
 from babel.numbers import format_currency
 import zipfile
+from PIL import Image
+import requests
+from io import BytesIO
 
 sns.set(style="whitegrid")  # Gaya visualisasi
 
@@ -30,12 +33,26 @@ def load_data(zip_file):
         st.error("File main_data.csv tidak ditemukan dalam ZIP. Pastikan file tersedia.")
         return pd.DataFrame()
 
+# Fungsi untuk memuat logo dari URL
+@st.cache_data
+def load_logo(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Pastikan URL valid
+        img = Image.open(BytesIO(response.content))
+        return img
+    except Exception as e:
+        st.error(f"Gagal memuat logo: {e}")
+        return None
+
 # Header aplikasi
 st.title("E-Commerce Dashboard")
 
-# Upload dataset dan logo
+# Input URL untuk logo
+logo_url = st.text_input("Masukkan URL logo perusahaan (contoh: https://raw.githubusercontent.com/user/repo/gcl.png):")
+
+# Upload dataset
 uploaded_file = st.file_uploader("Pilih file ZIP untuk dataset", type="zip")
-uploaded_logo = st.file_uploader("Pilih file gambar logo perusahaan", type=["png", "jpg", "jpeg"])
 
 # Load dataset (default atau user-uploaded)
 main_data = load_default_data() if uploaded_file is None else load_data(uploaded_file)
@@ -52,12 +69,14 @@ else:
     with st.sidebar:
         st.subheader("Filter Data")
         
-        # Logo perusahaan
-        if uploaded_logo:
-            st.image(uploaded_logo, caption="Logo Perusahaan", use_column_width=True)
+        # Tampilkan logo jika URL valid
+        if logo_url:
+            logo = load_logo(logo_url)
+            if logo:
+                st.image(logo, caption="Logo Perusahaan", use_column_width=True)
         else:
-            st.info("Unggah logo perusahaan untuk tampilan lebih menarik.")
-        
+            st.info("Masukkan URL logo perusahaan untuk tampilan lebih menarik.")
+
         # Filter tanggal
         start_date, end_date = st.date_input(
             "Pilih Rentang Tanggal",
