@@ -18,7 +18,7 @@ def load_default_data():
         "order_id": range(1, 101),
         "payment_value": [i * 1000 for i in range(1, 101)],
         "weathersit": ["Clear" if i % 2 == 0 else "Rain" for i in range(1, 101)],
-        "season": ["Winter" if i % 4 == 0 else "Summer" for i in range(1, 101)]
+        "season": ["Winter" if i % 4 == 0 else "Summer" if i % 4 == 1 else "Spring" if i % 4 == 2 else "Autumn" for i in range(1, 101)]
     })
     data["order_approved_at"] = pd.to_datetime(data["order_approved_at"])
     return data
@@ -38,51 +38,41 @@ def load_logo(url):
 # Header aplikasi
 st.title("E-Commerce Dashboard")
 
-# Pilihan logo perusahaan
-st.sidebar.subheader("Pilih Logo Perusahaan")
-logo_options = {
-    "Logo 1": "https://raw.githubusercontent.com/user/repo/logo1.png",
-    "Logo 2": "https://raw.githubusercontent.com/user/repo/logo2.png",
-    "Logo 3": "https://raw.githubusercontent.com/user/repo/logo3.png"
-}
-logo_choice = st.sidebar.selectbox("Pilih Logo", options=["Default"] + list(logo_options.keys()))
-
-# Memuat logo yang dipilih
-if logo_choice != "Default":
-    logo_url = logo_options[logo_choice]
-    logo = load_logo(logo_url)
-else:
-    logo = None
-
-# Tampilkan logo di sidebar
-if logo:
-    st.sidebar.image(logo, caption="Logo Perusahaan", use_column_width=True)
-else:
-    st.sidebar.info("Logo default digunakan.")
+# Input URL untuk logo perusahaan
+logo_url = st.text_input("Masukkan URL logo perusahaan (contoh: https://raw.githubusercontent.com/user/repo/gcl.png):")
 
 # Muat dataset bawaan
 main_data = load_default_data()
 
 # Sidebar untuk filtering data
-st.sidebar.subheader("Filter Data")
+with st.sidebar:
+    st.subheader("Filter Data")
 
-# Filter tanggal
-start_date, end_date = st.sidebar.date_input(
-    "Pilih Rentang Tanggal",
-    value=[main_data["order_approved_at"].min().date(), main_data["order_approved_at"].max().date()],
-    min_value=main_data["order_approved_at"].min().date(),
-    max_value=main_data["order_approved_at"].max().date()
-)
+    # Tampilkan logo jika URL valid
+    if logo_url:
+        logo = load_logo(logo_url)
+        if logo:
+            st.image(logo, caption="Logo Perusahaan", use_column_width=True)
+    else:
+        st.info("Masukkan URL logo perusahaan untuk tampilan lebih menarik.")
 
-# Konversi tanggal filter ke datetime Pandas
-start_date = pd.to_datetime(start_date)
-end_date = pd.to_datetime(end_date)
+    # Filter tanggal
+    start_date, end_date = st.date_input(
+        "Pilih Rentang Tanggal",
+        value=[main_data["order_approved_at"].min().date(), main_data["order_approved_at"].max().date()],
+        min_value=main_data["order_approved_at"].min().date(),
+        max_value=main_data["order_approved_at"].max().date()
+    )
 
-# Filter cuaca
-weather_filter = st.sidebar.selectbox("Pilih Cuaca", options=main_data["weathersit"].unique())
+    # Konversi tanggal filter ke datetime Pandas
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
 
-# Filter musim
-season_filter = st.sidebar.multiselect("Pilih Musim", options=main_data["season"].unique(), default=main_data["season"].unique())
+    # Filter cuaca
+    weather_filter = st.selectbox("Pilih Cuaca", options=main_data["weathersit"].unique(), index=0)
+
+    # Filter musim
+    season_filter = st.multiselect("Pilih Musim", options=main_data["season"].unique(), default=main_data["season"].unique())
 
 # Filter data berdasarkan input pengguna
 filtered_data = main_data[
@@ -92,23 +82,22 @@ filtered_data = main_data[
 ]
 
 # Analisis metrik harian
-daily_metrics = filtered_data.set_index("order_approved_at").resample("D").agg({
-    "order_id": "nunique",
-    "payment_value": "sum"
-}).reset_index().rename(columns={"order_id": "order_count", "payment_value": "revenue"})
+if not filtered_data.empty:
+    daily_metrics = filtered_data.set_index("order_approved_at").resample("D").agg({
+        "order_id": "nunique",
+        "payment_value": "sum"
+    }).reset_index().rename(columns={"order_id": "order_count", "payment_value": "revenue"})
 
-# Menampilkan metrik utama
-st.header("Ringkasan Metrik")
-total_orders = daily_metrics["order_count"].sum()
-total_revenue = daily_metrics["revenue"].sum()
+    # Menampilkan metrik utama
+    st.header("Ringkasan Metrik")
+    total_orders = daily_metrics["order_count"].sum()
+    total_revenue = daily_metrics["revenue"].sum()
 
-col1, col2 = st.columns(2)
-col1.metric("Total Orders", f"{total_orders:,}")
-col2.metric("Total Revenue", format_currency(total_revenue, "IDR", locale="id_ID"))
+    col1, col2 = st.columns(2)
+    col1.metric("Total Orders", f"{total_orders:,}")
+    col2.metric("Total Revenue", format_currency(total_revenue, "IDR", locale="id_ID"))
 
-# Visualisasi data
-if not daily_metrics.empty:
-    # Grafik: Tren Pesanan Harian
+    # Visualisasi data
     st.subheader("Tren Jumlah Pesanan Harian")
     fig, ax = plt.subplots(figsize=(10, 5))
     sns.lineplot(data=daily_metrics, x="order_approved_at", y="order_count", ax=ax, marker="o")
@@ -117,7 +106,6 @@ if not daily_metrics.empty:
     ax.set_ylabel("Jumlah Pesanan")
     st.pyplot(fig)
 
-    # Grafik: Tren Pendapatan Harian
     st.subheader("Tren Pendapatan Harian")
     fig, ax = plt.subplots(figsize=(10, 5))
     sns.lineplot(data=daily_metrics, x="order_approved_at", y="revenue", ax=ax, marker="o", color="green")
@@ -134,7 +122,7 @@ st.markdown("""
 **Penjelasan Fitur:**
 1. **Filter Tanggal**: Pilih rentang tanggal untuk memfilter data.
 2. **Filter Cuaca**: Pilih cuaca tertentu (Clear, Rain, dll.).
-3. **Filter Musim**: Pilih musim tertentu (Summer, Winter, dll.).
+3. **Filter Musim**: Pilih musim tertentu (Summer, Winter, Spring, Autumn).
 
 **Visualisasi:**
 - Grafik Tren Jumlah Pesanan Harian.
