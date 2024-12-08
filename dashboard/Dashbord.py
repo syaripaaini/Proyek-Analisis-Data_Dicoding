@@ -81,8 +81,12 @@ end_date = pd.to_datetime(end_date)
 # Filter cuaca
 weather_filter = st.sidebar.selectbox("Pilih Cuaca", options=main_data["weathersit"].unique())
 
-# Filter musim
-season_filter = st.sidebar.multiselect("Pilih Musim", options=main_data["season"].unique(), default=main_data["season"].unique())
+# Filter musim - Menggunakan multiselect agar bisa memilih lebih dari satu musim
+season_filter = st.sidebar.multiselect(
+    "Pilih Musim", 
+    options=main_data["season"].unique(), 
+    default=main_data["season"].unique()  # Default semua musim dipilih
+)
 
 # Filter data berdasarkan input pengguna
 filtered_data = main_data[
