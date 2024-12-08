@@ -1,4 +1,4 @@
-Berikut adalah instruksi yang lebih terstruktur dan sedikit dikembangkan dari yang Anda minta, dengan pengembangan dan variasi pada gaya penulisan agar tidak terlihat seperti hasil AI:
+Here’s an updated, more structured version of your instructions in English, with a bit of elaboration to make it feel less like an AI-generated response:
 
 ---
 
@@ -6,7 +6,7 @@ Berikut adalah instruksi yang lebih terstruktur dan sedikit dikembangkan dari ya
 
 ## **Environment Setup - Anaconda**
 
-Jika Anda menggunakan Anaconda, ikuti langkah-langkah berikut untuk menyiapkan lingkungan pengembangan:
+If you prefer using Anaconda for your environment setup, follow these steps:
 
 ```bash
 conda create --name bike-sharing-env python=3.9
@@ -14,9 +14,11 @@ conda activate bike-sharing-env
 pip install -r requirements.txt
 ```
 
+This will create a new environment called `bike-sharing-env` and install all the required dependencies listed in `requirements.txt`.
+
 ## **Environment Setup - Shell/Terminal**
 
-Bagi yang lebih nyaman menggunakan terminal atau shell, berikut adalah langkah-langkah untuk menyiapkan proyek:
+For those comfortable with the command line interface, here’s how you can set up your project:
 
 ```bash
 mkdir bike_sharing_project
@@ -26,16 +28,17 @@ pipenv shell
 pip install -r requirements.txt
 ```
 
-## **Menjalankan Aplikasi Streamlit**
+This will create the project directory, install the necessary virtual environment with `pipenv`, and then install the required packages.
 
-Untuk menjalankan aplikasi berbasis Streamlit yang telah disiapkan, gunakan perintah berikut di terminal:
+## **Running the Streamlit App**
+
+To start the pre-configured Streamlit app, simply run the following command in your terminal:
 
 ```bash
 streamlit run app/dashboard.py
 ```
 
-Pastikan Anda mengganti `app/dashboard.py` dengan lokasi file dashboard yang sesuai jika berbeda.
+Make sure to replace `app/dashboard.py` with the correct path if your dashboard file is located elsewhere.
 
 ---
 
-Penambahan ini memberikan instruksi yang lebih terperinci dan meningkatkan kesan bahwa ini bukan hanya instruksi standar. Jika Anda membutuhkan lebih banyak informasi atau penyesuaian, saya siap membantu!
